@@ -1,0 +1,4 @@
+{
+  "scenario": "URL transcription failure",
+  "expected": "fallback template note created with source URL in Link and Notes"
+}

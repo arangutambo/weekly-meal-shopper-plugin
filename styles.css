@@ -1,0 +1,216 @@
+.weekly-meal-shopper-list-section {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 14px;
+}
+
+.weekly-meal-shopper-foldable-toggle {
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.weekly-meal-shopper-foldable-body {
+  margin-top: 6px;
+}
+
+.weekly-meal-shopper-section-search {
+  margin-bottom: 10px;
+}
+
+.weekly-meal-shopper-search-input {
+  width: 100%;
+}
+
+.weekly-meal-shopper-list-section h3 {
+  margin: 0 0 6px 0;
+}
+
+.weekly-meal-shopper-help {
+  margin: 0 0 10px 0;
+  color: var(--text-muted);
+}
+
+.weekly-meal-shopper-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.weekly-meal-shopper-plus-btn {
+  min-width: 36px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.weekly-meal-shopper-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekly-meal-shopper-entry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.weekly-meal-shopper-entry-text {
+  overflow-wrap: anywhere;
+}
+
+.weekly-meal-shopper-remove-btn {
+  white-space: nowrap;
+}
+
+.weekly-meal-shopper-empty {
+  color: var(--text-muted);
+}
+
+.weekly-meal-shopper-category-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin-bottom: 10px;
+}
+
+.weekly-meal-shopper-category-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-ui-small);
+}
+
+.weekly-meal-shopper-recipe-view {
+  display: grid;
+  grid-template-columns: minmax(230px, 320px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  min-height: 0;
+}
+
+.weekly-meal-shopper-recipe-ingredients-pane {
+  position: static;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--background-secondary);
+}
+
+.weekly-meal-shopper-recipe-main-pane {
+  min-width: 0;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.weekly-meal-shopper-direction-step {
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.weekly-meal-shopper-direction-step-active {
+  background: var(--background-secondary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 0 0 1px var(--background-modifier-border-focus);
+}
+
+.weekly-meal-shopper-direction-free-scroll-spacer {
+  pointer-events: none;
+}
+
+.weekly-meal-shopper-ingredient-group-dimmed {
+  opacity: 0.35;
+  transition: opacity 140ms ease;
+}
+
+.weekly-meal-shopper-ingredient-group-active {
+  opacity: 1;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--background-primary);
+  box-shadow: 0 0 0 1px var(--background-modifier-border-focus);
+}
+
+.weekly-meal-shopper-ingredient-item {
+  cursor: pointer;
+}
+
+.weekly-meal-shopper-ingredient-item:hover {
+  opacity: 0.85;
+}
+
+.weekly-meal-shopper-ingredient-mentioned {
+  font-weight: 700;
+}
+
+.weekly-meal-shopper-ingredient-used {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+.weekly-meal-shopper-recipe-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: var(--background-primary);
+}
+
+.weekly-meal-shopper-recipe-overlay-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.weekly-meal-shopper-recipe-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 10px 12px;
+}
+
+.weekly-meal-shopper-recipe-overlay-title {
+  font-weight: 600;
+}
+
+.weekly-meal-shopper-recipe-overlay-close {
+  min-width: 34px;
+  min-height: 30px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.weekly-meal-shopper-recipe-overlay-content {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .weekly-meal-shopper-recipe-view {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-meal-shopper-recipe-ingredients-pane {
+    position: static;
+    max-height: none;
+  }
+
+  .weekly-meal-shopper-recipe-main-pane {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}

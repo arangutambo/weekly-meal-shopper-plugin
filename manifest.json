@@ -1,0 +1,9 @@
+{
+  "id": "weekly-meal-shopper",
+  "name": "Weekly Meal Shopper",
+  "version": "0.3.0",
+  "minAppVersion": "0.15.0",
+  "description": "Standardize recipe notes, parse ingredient amounts, and generate weekly shopping lists from a meal-plan canvas.",
+  "author": "Antoine + Codex",
+  "isDesktopOnly": false
+}

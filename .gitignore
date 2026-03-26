@@ -1,0 +1,19 @@
+# Local plugin settings (can contain API keys / personal config)
+data.json
+
+# Environment / secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Build / dependency artifacts
+node_modules/
+dist/
+build/
+coverage/
+
+# OS noise
+.DS_Store
