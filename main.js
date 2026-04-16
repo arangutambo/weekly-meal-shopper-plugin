@@ -40,7 +40,7 @@ const DEFAULT_SETTINGS = {
   transcriptionApiKey: "",
   transcriptionModel: "gpt-4.1-mini",
   showCategoryReasonsInShoppingList: true,
-  includeOverrideLinksInShoppingList: true,
+  includeOverrideLinksInShoppingList: false,
   settingsImportExportPath: ".obsidian/plugins/weekly-meal-shopper/settings-export.json",
   settingsSectionState: {
     shoppingCategoriesCollapsed: false,
@@ -1125,6 +1125,69 @@ function shouldRoundUpUnitItem(name) {
   return text.includes("avocado");
 }
 
+const GARLIC_ROLLUP_RULE = {
+  singular: "garlic clove",
+  plural: "garlic cloves",
+  mlPerClove: 5,
+};
+
+function isGarlicRollupCandidate(name) {
+  const text = normalizeSearchText(name);
+  return text === "garlic" || text === "garlic clove" || text === "garlic cloves";
+}
+
+function estimateGarlicClovesFromItem(item) {
+  if (!item || typeof item !== "object") return 0;
+  const amount = Number(item.amount || 0);
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  if (item.unit === "unit") return amount;
+  if (item.unit === "ml") return amount / GARLIC_ROLLUP_RULE.mlPerClove;
+  return 0;
+}
+
+function buildGarlicRollupItem(items) {
+  const candidates = Array.isArray(items) ? items : [];
+  let estimatedCloves = 0;
+  let category = "";
+  let categoryLocked = false;
+  const recipes = new Set();
+
+  for (const item of candidates) {
+    if (!item || typeof item !== "object") continue;
+    const displayName = normalizeShoppingDisplayName(stripPreparationPhrases(item.name));
+    if (!isGarlicRollupCandidate(displayName)) continue;
+    const cloves = estimateGarlicClovesFromItem(item);
+    if (!Number.isFinite(cloves) || cloves <= 0) continue;
+    estimatedCloves += cloves;
+
+    const itemCategory = String(item.category || "").trim();
+    if (!category && itemCategory) category = itemCategory;
+    if (item.categoryLocked) {
+      category = itemCategory || category;
+      categoryLocked = true;
+    } else if ((!category || category === "Other") && itemCategory && itemCategory !== "Other") {
+      category = itemCategory;
+    }
+
+    const recipeEntries = item.recipes && typeof item.recipes[Symbol.iterator] === "function"
+      ? item.recipes
+      : [];
+    for (const recipe of recipeEntries) recipes.add(recipe);
+  }
+
+  if (estimatedCloves <= 0) return null;
+
+  const roundedCloves = Math.max(1, Math.ceil(estimatedCloves));
+  return {
+    name: roundedCloves === 1 ? GARLIC_ROLLUP_RULE.singular : GARLIC_ROLLUP_RULE.plural,
+    unit: "unit",
+    amount: roundedCloves,
+    recipes,
+    category: category || "Fresh Fruit and Vegetables",
+    categoryReason: categoryLocked ? "manual override" : "garlic clove estimate",
+  };
+}
+
 const CITRUS_RULES = {
   lemon: { singular: "lemon", plural: "lemons", juiceMlPerFruit: 45 },
   lime: { singular: "lime", plural: "limes", juiceMlPerFruit: 30 },
@@ -2176,7 +2239,7 @@ class WeeklyMealShopperPlugin extends Plugin {
     this.settings.ingredientLineTemplate = normalizeIngredientLineTemplate(this.settings.ingredientLineTemplate);
     this.settings.transcriptionMetricOutput = this.settings.transcriptionMetricOutput !== false;
     this.settings.showCategoryReasonsInShoppingList = this.settings.showCategoryReasonsInShoppingList !== false;
-    this.settings.includeOverrideLinksInShoppingList = this.settings.includeOverrideLinksInShoppingList !== false;
+    this.settings.includeOverrideLinksInShoppingList = this.settings.includeOverrideLinksInShoppingList === true;
     this.settings.settingsImportExportPath = String(
       this.settings.settingsImportExportPath || ".obsidian/plugins/weekly-meal-shopper/settings-export.json"
     ).trim() || ".obsidian/plugins/weekly-meal-shopper/settings-export.json";
@@ -2221,7 +2284,7 @@ class WeeklyMealShopperPlugin extends Plugin {
       this.settings.featureBasicEnabled = true;
       this.settings.featureMealPrepEnabled = true;
       this.settings.showCategoryReasonsInShoppingList = true;
-      this.settings.includeOverrideLinksInShoppingList = true;
+      this.settings.includeOverrideLinksInShoppingList = false;
       await this.saveSettings();
       return;
     }
@@ -2230,7 +2293,7 @@ class WeeklyMealShopperPlugin extends Plugin {
     this.settings.featureBasicEnabled = true;
     this.settings.featureMealPrepEnabled = true;
     this.settings.showCategoryReasonsInShoppingList = true;
-    this.settings.includeOverrideLinksInShoppingList = true;
+    this.settings.includeOverrideLinksInShoppingList = false;
     await this.saveSettings();
   }
 
@@ -3925,6 +3988,7 @@ class WeeklyMealShopperPlugin extends Plugin {
     }
 
     const rawItems = [...totals.values()].sort((a, b) => a.name.localeCompare(b.name));
+    const garlicItems = [];
     const citrusRollup = new Map();
     const totalItems = [];
 
@@ -3932,6 +3996,15 @@ class WeeklyMealShopperPlugin extends Plugin {
       const displayName = normalizeShoppingDisplayName(stripPreparationPhrases(item.name));
       const normalizedDisplayName = normalizeSearchText(displayName);
       const citrusKey = detectCitrusKey(displayName);
+      const garlicCandidate = isGarlicRollupCandidate(displayName) && !item.quantityUnknown && ["ml", "unit"].includes(item.unit);
+
+      if (garlicCandidate) {
+        garlicItems.push({
+          ...item,
+          name: displayName,
+        });
+        continue;
+      }
 
       if (!citrusKey) {
         if (item.quantityUnknown) {
@@ -3986,6 +4059,9 @@ class WeeklyMealShopperPlugin extends Plugin {
 
       citrusRollup.set(citrusKey, citrus);
     }
+
+    const garlicRollupItem = buildGarlicRollupItem(garlicItems);
+    if (garlicRollupItem) totalItems.push(garlicRollupItem);
 
     for (const citrus of citrusRollup.values()) {
       const rule = CITRUS_RULES[citrus.key];
